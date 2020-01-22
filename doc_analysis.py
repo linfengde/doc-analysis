@@ -1,8 +1,8 @@
 #-*- coding:utf-8 _*-
 """
-@author:Yuefeng Lin
+@author:Lengde Lin
 @file: main.py
-@time: 2019/04/03
+@time: 2019/12/25
 @function: v1.2:   测试版
 ******* 功能点 ********
 1.近义词词频统计              word_count
@@ -33,6 +33,7 @@ import itertools
 import re
 import copy
 from utils import *
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 # 词特征
@@ -464,11 +465,13 @@ def find_sentences_rule(keywords_list,doc_txt):
 def generate_keywords(input_txt, output_csv,write_csv=True):
 
     # 词频统计
-    word_count_result = word_count(input_txt, '', write_csv=False, count_only_singleword=True)
+    input_str = [line.strip() for line in open(input_txt, 'r', encoding='utf-8').readlines() if len(line) > 1]    # 按特殊标点符号，分割句子
+    input_str = ''.join(input_str)
+    word_count_result = word_count(input_str, count_only_singleword=True)
     word_count_result_dict = { key:value for key,value in zip(word_count_result['keys'],word_count_result['value'])}
 
     # 新词发现
-    newword_result = newword_found(input_txt, '', mode='all', filter=True,write_csv=False)
+    newword_result = newword_found(input_str, filter=True)
     newword_result_dict = { key:value for key,value in zip(newword_result['keyword'],newword_result['freqs'])}
 
     # 将词频+新词发现组合，去重后，组成字典
@@ -532,9 +535,20 @@ def generate_keywords(input_txt, output_csv,write_csv=True):
     # 输出主题,由权重高的5个关键词组合
     theme=''
     for word in keywords_result['word'][0:5]:
-        theme = theme+word+'#'
-
+         theme = theme+word+'#'
+    #theme = keywords_result['word'][0:5]
     return keywords_result,theme
+
+
+def tfidf_cosine(s1, s2):
+    vectorizer = TfidfVectorizer()
+    train_modle = vectorizer.fit([s1, s2])
+    print(train_modle.vocabulary_)
+    X = train_modle.transform([s1, s2])  # 得到s1，s2用TF-IDF方式表示的向量
+    print(X.toarray())
+#    print(cosine_similarity(X[0], X[1]))
+
+
 
 
 # TODO： 通过LDA提取主题词
@@ -544,8 +558,10 @@ def generate_keywords(input_txt, output_csv,write_csv=True):
 # TODO: 通过图算法提取主题词
 
 if __name__ == '__main__':
-    input_txt = './data/2018future.txt'     # 主要分析文件，新增词频，相同词频基于这个文件
-    input_txt2 = './data/2017future.txt'      # 被比较文章
+    # input_txt = './data/2018future.txt'     # 主要分析文件，新增词频，相同词频基于这个文件
+    # input_txt2 = './data/2017future.txt'      # 被比较文章
+    input_txt = './data/test.txt'     # 主要分析文件，新增词频，相同词频基于这个文件
+
     # input_txt = './data/airline2.txt'
     # input_txt2 = './data/airline1.txt'  # 被比较文章
     # input_txt = './data/2015deriatives.txt'          #  span有BUG
@@ -582,9 +598,9 @@ if __name__ == '__main__':
     # find_sentences(keywords,input_txt,output_csv,topn=2,write_csv=True)
 
     # ************ 排序新增概念句子 ******************
-    word_weight_csv = './result/notsame_count.csv'              # 根据difference_count得出
-    output_sentence_sort_csv ='./result/sentence_sort.csv'
-    topn_sentences = find_sentences_weight(word_weight_csv, input_txt,output_sentence_sort_csv,top_keywords=20,topn=2,write_csv=True)
+    # word_weight_csv = './result/notsame_count.csv'              # 根据difference_count得出
+    # output_sentence_sort_csv ='./result/sentence_sort.csv'
+    # topn_sentences = find_sentences_weight(word_weight_csv, input_txt,output_sentence_sort_csv,top_keywords=20,topn=2,write_csv=True)
 
     # ************ 根据规则筛选句子（生成目录） ******************
     # keywords_path = './lib/keywords.txt'
@@ -593,5 +609,12 @@ if __name__ == '__main__':
 
     # ************ 生成文章关键词 ******************
     # output_keywords_csv ='./result/keywords_weight.csv'
-    # keywords_result,theme = generate_keywords(input_txt,output_keywords_csv,write_csv=True)
-    # print(theme)
+
+    output_keywords_csv = None
+    keywords_result,theme = generate_keywords(input_txt,output_keywords_csv,write_csv=False)
+    print(keywords_result)
+    print(theme)
+#    test_keywords_result = keywords_result['word'][:]
+
+#    print(tfidf_cosine("二代稳性在海工平台及海工船的适用范围及稳性计算实现",
+#                      "通过开展国内外海工行业项目生产组织模式收集、调研、分析、研究，为招商局重工生产组织模式变革、精益化生产提供理论分析基础。"))

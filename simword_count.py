@@ -1,8 +1,8 @@
 #-*- coding:utf-8 _*-
 """
-@author:Yuefeng Lin
+@author:Fengde Lin
 @file: word_count.py
-@time: 2019/02/21
+@time: 2020/01/11
 @v1.4  稳定版    专用于话题演变分析版本
 @notice: 采用flashtext检索自定义近似词， 由于flashtext原理，不能保证完全切分出自定义词
 """

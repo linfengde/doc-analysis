@@ -1,8 +1,8 @@
 #-*- coding:utf-8 _*-
 """
-@author:Yuefeng Lin
+@author:Fengde Lin
 @file: termrecognition.py
-@time: 2019/03/26
+@time: 2020/01/07
 """
 
 import warnings
